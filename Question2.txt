@@ -1,0 +1,67 @@
+How many orders were shipped by Speedy Express in total?
+
+Explanation of solution:
+We are counting the orders such that ShipperID is Speedy Express
+
+SELECT COUNT(Orders.OrderID) AS SPEEDY_ORDERS
+FROM Orders 
+WHERE Orders.ShipperID = (
+	SELECT Shippers.ShipperID 
+    FROM Shippers 
+    WHERE Shippers.ShipperName = "Speedy Express");
+
+Solution = 54	
+	
+	
+	
+What is the last name of the employee with the most orders?
+
+Explanation of solution:
+We are selecting the EmployeeID with more entries in Orders table and then finding the LastName of that EmployeeID
+
+SELECT Employees.LastName
+FROM Employees 
+WHERE Employees.EmployeeID = (
+	SELECT Orders.EmployeeID
+	FROM Orders
+	GROUP BY Orders.EmployeeID
+	HAVING COUNT(Orders.EmployeeID) = (
+		SELECT MAX(MOST_FREQUENT) 
+		FROM(
+			SELECT Orders.EmployeeID, COUNT(Orders.EmployeeID) AS MOST_FREQUENT
+			FROM Orders 
+			GROUP BY EmployeeID
+		)
+	)
+);
+
+Solution = Peacock 
+			
+			
+
+
+What product was ordered the most by customers in Germany?
+
+Explanation of solution:
+
+-Find CustomerID of customers whose country is Germany
+-Find OrderID by those CustomerID in Orders table
+-Find ProductID by those OrderID in OrderDetails table
+-Once you have the list of all products ordered by customers in Germany, compute the quantity by type of ProductID and select the ProductID with higher quantity
+-Finally, find the ProductName of that ProductID in the Products table
+
+
+SELECT TOP 1 Products.ProductName ,Customers.Country, SUM(OrderDetails.Quantity) AS TOTAL
+FROM (((
+	Customers INNER JOIN Orders 
+	ON Customers.CustomerID = Orders.CustomerID ) 
+		INNER JOIN OrderDetails 
+		ON Orders.OrderID = OrderDetails.OrderID )
+			INNER JOIN Products
+			ON OrderDetails.ProductID = Products.ProductID)
+WHERE Customers.Country = "Germany"
+GROUP BY Products.ProductName ,Customers.Country
+ORDER BY SUM(OrderDetails.Quantity) DESC;
+
+
+Solution = Boston Crab Meat 
